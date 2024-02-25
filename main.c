@@ -25,10 +25,7 @@ int main(int argc, char *argv[])
 	setrlimit(RLIMIT_NPROC, &limit);
 	// DO NOT REMOVE THE BLOCK ABOVE THIS LINE //
 
-	char *cmdline = (char *)malloc(MAXBUF);					// stores user input from commmand line
-	char *delim = (char *)malloc(2 * sizeof(char)); // Tried to make this global, but gcc didn't like it
-	delim[0] = ' ';
-	delim[1] = '\0';
+	char *cmdline = (char *)malloc(MAXBUF);
 	while (1)
 	{
 		printf("dsh> ");
@@ -37,60 +34,23 @@ int main(int argc, char *argv[])
 			printf("\n");
 			break;
 		}
+		else if (strlen(cmdline) == 1)
+		{
+			// If we just press enter, just move on
+			continue;
+		}
 		else
 		{
 			cmdline[strlen(cmdline) - 1] = '\0';
-			char **terms = split(cmdline, delim);
-			// Handle builtin commands
-			int doExit = !strcmp(terms[0], "exit");
-			if (!doExit)
-			{
-				if (!strcmp(terms[0], "pwd"))
-				{
-					char *cwd = getcwd(NULL, 0);
-					printf("%s\n", cwd);
-					free(cwd);
-				}
-				else
-				{
-					if (!strcmp(terms[0], "cd"))
-					{
-						char *dir;
-						if (terms[1] == NULL)
-						{
-							dir = getenv("HOME");
-						}
-						else
-						{
-							dir = terms[1];
-						}
-
-						chdir(dir);
-					}
-					else
-					{
-						// Handle command running
-					}
-				}
-			}
-
-			// Free the terms
-			int i = 0;
-			while (terms[i] != NULL)
-			{
-				free(terms[i]);
-				i++;
-			}
-			free(terms);
-
-			if (doExit)
+			// Handle the command, it returns 1 if we want to exit
+			if (handleCommand(cmdline))
 			{
 				break;
 			}
 		}
 	}
 
+	// Free the cmdline, which we allocated at the start
 	free(cmdline);
-	free(delim);
 	return 0;
 }
