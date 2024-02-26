@@ -56,14 +56,25 @@ char **split(char *str, char *delim)
     {
         // Continue the strtok chain for each token
         tok = strtok(NULL, delim);
-        // We copy the tok to new memory since strtok will
-        // overwrite the pointer it returns on subsequent calls
-        result[i] = (char *)malloc((strlen(tok) + 1) * sizeof(char));
-        strcpy(result[i], tok);
+        if (tok == NULL)
+        {
+            // Create an empty string
+            result[i] = (char *)malloc(sizeof(char));
+            *result[i] = '\0';
+        }
+        else
+        {
+            // We copy the tok to new memory since strtok will
+            // overwrite the pointer it returns on subsequent calls
+            result[i] = (char *)malloc((strlen(tok) + 1) * sizeof(char));
+            strcpy(result[i], tok);
+        }
     }
-
+    i = numTokens;
+    while (strlen(result[i - 1]) == 0)
+        i--;
     // Add the final NULL and return
-    result[numTokens] = NULL;
+    result[i] = NULL;
     return result;
 }
 
@@ -176,6 +187,11 @@ void searchPath(char **terms, char *fullpath, int bg)
 int handleCommand(char *cmdline)
 {
     char **terms = split(cmdline, cmddelim);
+    if (terms[0] == NULL)
+    {
+        free(terms);
+        return 0;
+    }
     // Handle builtin commands
     int doExit = !strcmp(terms[0], "exit");
     if (!doExit)
